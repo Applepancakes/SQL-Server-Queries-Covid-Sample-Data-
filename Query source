@@ -1,0 +1,99 @@
+Can you provide a temporal analysis of COVID-19 cases? Showcasing the daily new cases and the rolling total, and the percentage of cases of the total population
+
+How many new cases were reported on the 2nd of Janurary 2021 in the US? How many is that compared to the total population?
+
+--CTE Rolling New cases of covid using partition
+With PopvsNew (Continent, Location, Date, Population, New_Cases, RollingNewCases)
+as
+(
+Select dea.continent, dea.location, CONVERT(VARCHAR,dea.date, 23), dea.population, dea.New_Cases
+, SUM(CONVERT(int,dea.new_cases)) OVER (Partition by dea.Location Order by dea.location, dea.Date) as RollingNewCases
+
+From P1..CovidDeaths dea
+where dea.continent is not null 
+
+)
+
+-- Final SELECT from CTE with additional calculation
+Select *, (RollingNewCases/Population) * 100 AS 'Percent of Total Population'
+
+From PopvsNew
+
+WHERE Location LIKE '%states%' AND date = '2021-01-02'
+
+
+
+----------
+
+
+
+-- Using Temp Table to perform similar calculation on Partition 
+In the year of 2020, how did the US compare to the UK in new vaccinations?
+
+
+DROP TABLE IF exists #PercentPopulationVaccinated
+CREATE TABLE #PercentPopulationVaccinated
+(
+Continent nvarchar(255),
+Location nvarchar(255),
+Date datetime,
+Population numeric,
+New_vaccinations numeric,
+RollingPeopleVaccinated numeric
+)
+
+INSERT INTO #PercentPopulationVaccinated
+-- Inserting data into the temp table
+
+SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
+, SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition BY dea.Location Order BY dea.location, dea.Date) as RollingPeopleVaccinated
+
+
+FROM P1..CovidDeaths dea
+
+JOIN P1..CovidVaccinations vac
+	ON dea.location = vac.location
+	and dea.date = vac.date
+
+
+-- Two SELECT statements for the different countries
+
+SELECT *, (RollingPeopleVaccinated/Population) * 100
+FROM #PercentPopulationVaccinated
+WHERE Location LIKE '%king%' AND date < '2021-01-01'
+
+
+SELECT *, (RollingPeopleVaccinated/Population) * 100
+FROM #PercentPopulationVaccinated
+WHERE Location LIKE '%states%' AND date < '2021-01-01'
+
+
+
+----------------------
+
+Creating view for visualization purposes
+
+What was the the final impact?
+
+CREATE VIEW OverallImpact AS
+-- Creating a view with aggregated data
+SELECT
+    dea.continent,
+    dea.location,
+    MAX(dea.date) AS 'Last recorded date',
+	dea.population,
+    MAX(CONVERT(INT, dea.total_cases)) AS 'Total cases',
+    MAX(CONVERT(INT, dea.total_deaths)) AS 'Total deaths',
+    MAX(CONVERT(INT, vac.total_tests)) AS 'Total tests',
+	MAX(CONVERT(INT, vac.people_fully_vaccinated)) AS 'Fully Vaccinated'
+FROM
+    P1.dbo.CovidDeaths dea
+INNER JOIN
+    P1.dbo.CovidVaccinations vac ON dea.location = vac.location
+WHERE dea.continent is not null
+GROUP BY
+    dea.continent, dea.location, dea.population;
+
+
+-- Selecting data from the view
+SELECT * FROM dbo.OverallImpact;
