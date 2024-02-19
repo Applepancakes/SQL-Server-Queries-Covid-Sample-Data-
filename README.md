@@ -1,4 +1,4 @@
-# SQL-Server-Queries-Covid-Sample-Data-
+# Showcase of Various SQL Server Queries using Covid Sample Data
 
 Can you provide a temporal analysis of COVID-19 cases? Showcasing the daily new cases and the rolling total, and the percentage of cases of the total population
 
