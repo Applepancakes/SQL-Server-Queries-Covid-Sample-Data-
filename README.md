@@ -15,13 +15,14 @@ How many new cases were reported on the 2nd of Janurary 2021 in the US? How many
 
 
 
--- Using Temp Table to perform similar calculation on Partition 
+- Using Temp Table to perform similar calculation on Partition
+- 
 In the year of 2020, how did the US compare to the UK in new vaccinations?
 
 ![image3](https://github.com/Applepancakes/SQL-Server-Queries-Covid-Sample-Data-/assets/158091426/7c4c6f7a-ee88-4165-8a7d-9b6cf5950d0d)
 
 
-Creating view for visualization purposes
+- Creating view for visualization purposes
 
 What was the the final impact?
 
